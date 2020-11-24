@@ -5,6 +5,7 @@ const c = @cImport({
     @cInclude("epoxy/gl.h");
     @cInclude("GLFW/glfw3.h");
 });
+const shader = @import("shader.zig");
 
 const SCREEN_WIDTH: u32 = 800;
 const SCREEN_HEIGHT: u32 = 600;
@@ -17,7 +18,7 @@ fn handleKey(win: ?*c.GLFWwindow, key: c_int, scancode: c_int, action: c_int, mo
     }
 }
 
-pub fn main() void {
+pub fn main() !void {
     const ok = c.glfwInit();
     if (ok == 0) {
         std.debug.panic("Failed to init GLFW\n", .{});
@@ -48,17 +49,6 @@ pub fn main() void {
         \\    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
         \\}
     ;
-    const vertex_shader = c.glCreateShader(c.GL_VERTEX_SHADER);
-    c.glShaderSource(vertex_shader, 1, &vertex_shader_source.ptr, null);
-    c.glCompileShader(vertex_shader);
-
-    var success: c_int = undefined;
-    var info_log: [512]u8 = undefined;
-    c.glGetShaderiv(vertex_shader, c.GL_COMPILE_STATUS, &success);
-    if (success == 0) {
-        c.glGetShaderInfoLog(vertex_shader, 512, null, &info_log);
-    }
-
     const fragment_shader_source: []const u8 =
         \\#version 330 core
         \\out vec4 FragColor;
@@ -68,15 +58,9 @@ pub fn main() void {
         \\    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
         \\}
     ;
-    const fragment_shader = c.glCreateShader(c.GL_FRAGMENT_SHADER);
-    c.glShaderSource(fragment_shader, 1, &fragment_shader_source.ptr, null);
-    c.glCompileShader(fragment_shader);
 
-    c.glGetShaderiv(fragment_shader, c.GL_COMPILE_STATUS, &success);
-    if (success == 0) {
-        c.glGetShaderInfoLog(fragment_shader, 512, null, &info_log);
-    }
-
+    const vertex_shader = try shader.loadShader(vertex_shader_source, shader.ShaderKind.vertex);
+    const fragment_shader = try shader.loadShader(fragment_shader_source, shader.ShaderKind.fragment);
     const shader_program = c.glCreateProgram();
     c.glAttachShader(shader_program, vertex_shader);
     c.glAttachShader(shader_program, fragment_shader);
