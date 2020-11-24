@@ -1,26 +1,21 @@
 const Builder = @import("std").build.Builder;
 
-pub fn build(b: *Builder) void {
-    // Standard release options allow the person running `zig build` to select
-    // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall.
-    const mode = b.standardReleaseOptions();
-
-    const exe = b.addExecutable("learnopengl", "src/window.zig");
-    exe.setBuildMode(mode);
+fn buildTutorialExe(name: []const u8, src: []const u8, description: []const u8, b: *Builder) void {
+    const exe = b.addExecutable(name, src);
+    exe.setBuildMode(b.standardReleaseOptions());
 
     // Link with system libraries needed for OpenGL.
     exe.linkLibC();
     exe.linkSystemLibrary("glfw");
     exe.linkSystemLibrary("epoxy");
 
-    exe.install();
+    b.default_step.dependOn(&exe.step);
+    b.step(name, description).dependOn(&exe.run().step);
+}
 
-    const run_cmd = exe.run();
-    run_cmd.step.dependOn(b.getInstallStep());
-    if (b.args) |args| {
-        run_cmd.addArgs(args);
-    }
-
-    const run_step = b.step("run", "Run the app");
-    run_step.dependOn(&run_cmd.step);
+pub fn build(b: *Builder) void {
+    // Standard release options allow the person running `zig build` to select
+    // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall.
+    buildTutorialExe("window", "src/window.zig", "Show a simple GLFW window", b);
+    buildTutorialExe("triangle", "src/triangle.zig", "Draw a triangle with OpenGL", b);
 }
