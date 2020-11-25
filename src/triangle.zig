@@ -39,28 +39,9 @@ pub fn main() !void {
 
     _ = c.glfwSetKeyCallback(window, handleKey);
     c.glfwMakeContextCurrent(window);
-    const vertex_shader_source: []const u8 =
-        \\#version 330 core
-        \\
-        \\layout (location = 0) in vec3 aPos;
-        \\
-        \\void main()
-        \\{
-        \\    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
-        \\}
-    ;
-    const fragment_shader_source: []const u8 =
-        \\#version 330 core
-        \\out vec4 FragColor;
-        \\
-        \\void main()
-        \\{
-        \\    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
-        \\}
-    ;
 
-    const vertex_shader = try shader.loadShader(vertex_shader_source, shader.ShaderKind.vertex);
-    const fragment_shader = try shader.loadShader(fragment_shader_source, shader.ShaderKind.fragment);
+    const vertex_shader = try shader.loadShaderFromFile("shaders/triangle_vs.glsl", shader.ShaderKind.vertex);
+    const fragment_shader = try shader.loadShaderFromFile("shaders/triangle_fs.glsl", shader.ShaderKind.fragment);
     const shader_program = c.glCreateProgram();
     c.glAttachShader(shader_program, vertex_shader);
     c.glAttachShader(shader_program, fragment_shader);
