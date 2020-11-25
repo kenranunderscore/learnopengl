@@ -24,8 +24,8 @@ fn toGLenum(shader_kind: ShaderKind) c.GLenum {
 /// the shader kind.
 fn loadShader(code: []const u8, kind: ShaderKind) !c.GLuint {
     const id = c.glCreateShader(toGLenum(kind));
-    // TODO is it useful to tell it its code length?
-    c.glShaderSource(id, 1, &code.ptr, null);
+    const code_size = @intCast(c.GLint, code.len);
+    c.glShaderSource(id, 1, &code.ptr, &code_size);
     c.glCompileShader(id);
 
     var success: c.GLint = undefined;
